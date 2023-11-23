@@ -20,6 +20,15 @@ void arrangeCircularBuffer(CircularBuffer *circularBuffer, int *buffer, int size
 
 void pushItemToBuff(CircularBuffer *circularBuffer, int item)
 {
+	if(circularBuffer->count<circularBuffer->size) 
+	{
+		circularBuffer->tail=item;
+		circularBuffer->count++;
+	}
+	else 
+	{
+		circularBuffer->head=item;
+	}
 }
 
 int main()
