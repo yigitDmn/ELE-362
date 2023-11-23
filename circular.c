@@ -18,14 +18,23 @@ void arrangeCircularBuffer(CircularBuffer *circularBuffer, int *buffer, int size
 	circularBuffer->count = 1;
 }
 
-void pushItemToBuff(CircularBuffer, int item)
+void pushItemToBuff(CircularBuffer *circularBuffer, int item)
 {
+	if(circularBuffer->count<circularBuffer->size) 
+	{
+		circularBuffer->tail=item;
+		circularBuffer->count++;
+	}
+	else 
+	{
+		circularBuffer->head=item;
+	}
 }
 
 int main()
 {
 	CircularBuffer C1;
-	int a[] = {1, 2, 3, 4};
+	int a[] = {1, 2, 3, 6};
 	int b = 4;
 	arrangeCircularBuffer(&C1, &a[0], b);
 	return 0;
