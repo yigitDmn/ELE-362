@@ -18,7 +18,7 @@ void arrangeCircularBuffer(CircularBuffer *circularBuffer, int *buffer, int size
 	circularBuffer->count = 1;
 }
 
-void pushItemToBuff(CircularBuffer, int item)
+void pushItemToBuff(CircularBuffer *circularBuffer, int item)
 {
 }
 
