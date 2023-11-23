@@ -15,11 +15,17 @@ void arrangeCircularBuffer(struct CircularBuffer *circularBuffer, int *buffer, i
 	circularBuffer->head = buffer;
 	circularBuffer->tail = buffer;
 	circularBuffer->size = size;
-	circularBuffer->count = 0;
+	circularBuffer->count = 1;
+}
+
+void pushItemToBuff(struct CircularBuffer, int item)
+{
 }
 
 int main()
 {
-
+	struct CircularBuffer C1;
+	int a, b;
+	arrangeCircularBuffer(&C1, &a, b);
 	return 0;
 }
