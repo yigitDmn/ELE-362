@@ -14,7 +14,7 @@ struct Buff {
 	}
 	
 	int main () {
-		printf("f");
+		printf("furkan");
 		
 	return 0;	
 		}
