@@ -9,12 +9,12 @@ struct Buff {
 	
 	};
 	void arrangeCircularBuffer (struct Buff pointer,int*buffer,int size){ 
-	sdfhsdfkjs // ABC
+
 	
 	}
 	
 	int main () {
-		
+		printf("f");
 		
 	return 0;	
 		}
