@@ -15,19 +15,19 @@ void arrangeCircularBuffer(CircularBuffer *circularBuffer, int *buffer, int size
 	circularBuffer->head = buffer;
 	circularBuffer->tail = buffer;
 	circularBuffer->size = size;
-	circularBuffer->count = 1;
+	circularBuffer->count = 0;
 }
 
 void pushItemToBuff(CircularBuffer *circularBuffer, int item)
 {
-	if(circularBuffer->count<circularBuffer->size) 
+	if (circularBuffer->count < circularBuffer->size)
 	{
-		circularBuffer->tail=item;
+		circularBuffer->tail = item;
 		circularBuffer->count++;
 	}
-	else 
+	else
 	{
-		circularBuffer->head=item;
+		circularBuffer->head = item;
 	}
 }
 
