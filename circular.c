@@ -1,15 +1,15 @@
 #include <stdio.h>
 
-struct CircularBuffer
+typedef struct
 {
 	int *ptrBuff;
-	int *head;
-	int *tail;
+	int head;
+	int tail;
 	int size;
 	int count;
-};
+} CircularBuffer;
 
-void arrangeCircularBuffer(struct CircularBuffer *circularBuffer, int *buffer, int size)
+void arrangeCircularBuffer(CircularBuffer *circularBuffer, int *buffer, int size)
 {
 	circularBuffer->ptrBuff = buffer;
 	circularBuffer->head = buffer;
@@ -18,13 +18,13 @@ void arrangeCircularBuffer(struct CircularBuffer *circularBuffer, int *buffer, i
 	circularBuffer->count = 1;
 }
 
-void pushItemToBuff(struct CircularBuffer, int item)
+void pushItemToBuff(CircularBuffer, int item)
 {
 }
 
 int main()
 {
-	struct CircularBuffer C1;
+	CircularBuffer C1;
 	int a[4], b;
 	arrangeCircularBuffer(&C1, &a[0], b);
 	return 0;
