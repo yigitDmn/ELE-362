@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <stdbool.h>
 typedef struct
 {
 	int *ptrBuff;
@@ -29,6 +29,9 @@ void pushItemToBuff(CircularBuffer *circularBuffer, int item)
 	{
 		circularBuffer->head = item;
 	}
+}
+_Bool popItemFromBuff(CircularBuffer *circularBuffer, int *item)
+{
 }
 
 int main()
