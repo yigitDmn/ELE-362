@@ -25,7 +25,7 @@ void pushItemToBuff(struct CircularBuffer, int item)
 int main()
 {
 	struct CircularBuffer C1;
-	int a, b;
-	arrangeCircularBuffer(&C1, &a, b);
+	int a[4], b;
+	arrangeCircularBuffer(&C1, &a[0], b);
 	return 0;
 }
