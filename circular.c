@@ -25,7 +25,8 @@ void pushItemToBuff(CircularBuffer, int item)
 int main()
 {
 	CircularBuffer C1;
-	int a[4], b;
+	int a[] = {1, 2, 3, 4};
+	int b = 4;
 	arrangeCircularBuffer(&C1, &a[0], b);
 	return 0;
 }
