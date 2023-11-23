@@ -1,21 +1,25 @@
 #include <stdio.h>
 
-struct Buff
+struct CircularBuffer
 {
 	int *ptrBuff;
-	int head;
-	int tail;
+	int *head;
+	int *tail;
 	int size;
 	int count;
 };
 
-void arrangeCircularBuffer(struct Buff pointer, int *buffer, int size)
+void arrangeCircularBuffer(struct CircularBuffer *circularBuffer, int *buffer, int size)
 {
+	circularBuffer->ptrBuff = buffer;
+	circularBuffer->head = buffer;
+	circularBuffer->tail = buffer;
+	circularBuffer->size = size;
+	circularBuffer->count = 0;
 }
 
 int main()
 {
-	printf("furkan");
 
 	return 0;
 }
