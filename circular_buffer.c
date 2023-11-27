@@ -1,6 +1,6 @@
 #include "circular_buffer.h"
 
-void arrangeCircularBuffer(CircularBuffer *ptr, int *buffer, int size)
+void arrangeCircularBuffer(CircularBuffer *ptr, uint8_t *buffer, uint32_t size)
 {
 	ptr->size = size;		 // Bufferın Boyutunun Belirlenmesi
 	ptr->ptrBuffer = buffer; // Bufferda Kullanılacak Dizinin Atanması
@@ -9,7 +9,7 @@ void arrangeCircularBuffer(CircularBuffer *ptr, int *buffer, int size)
 	ptr->tail = 0;
 }
 
-void pushItemToBuff(CircularBuffer *ptr, int item)
+void pushItemToBuff(CircularBuffer *ptr, uint8_t item)
 {
 	ptr->ptrBuffer[ptr->tail] = item; // Buffer Hala dolmamış ise son kısma veriyi ata
 	if (ptr->count < ptr->size)
@@ -24,7 +24,7 @@ void pushItemToBuff(CircularBuffer *ptr, int item)
 	ptr->tail = (ptr->tail + 1) % ptr->size; // Eğer tail son elemandaysa tekrar başa dönsün
 }
 
-_Bool popItemFromBuff(CircularBuffer *ptr, int *item)
+_Bool popItemFromBuff(CircularBuffer *ptr, uint8_t *item)
 {
 	if (ptr->count == 0) // Buferda eleman olmadığı için çıkarma işlemi başarısız
 	{
@@ -39,9 +39,9 @@ _Bool popItemFromBuff(CircularBuffer *ptr, int *item)
 	return 0;
 }
 
-_Bool pickItemFromBuff(CircularBuffer *ptr, int *item, int offset)
+_Bool pickItemFromBuff(CircularBuffer *ptr, uint8_t *item, uint32_t offset)
 {
-	int tempIndex = (ptr->head + offset) % ptr->size;
+	uint32_t tempIndex = (ptr->head + offset) % ptr->size;
 	if (tempIndex > ptr->count) // Eğer bu index önceden değer almamışsa değer yok olarak say
 	{
 		return 1;
@@ -62,12 +62,12 @@ void deleteFromHead(CircularBuffer *ptr)
 	ptr->ptrBuffer[ptr->head] = 0;
 }
 
-int getHead(CircularBuffer *ptr)
+uint32_t getHead(CircularBuffer *ptr)
 {
 	return ptr->head;
 }
 
-int getCount(CircularBuffer *ptr)
+uint32_t getCount(CircularBuffer *ptr)
 {
 	return ptr->count;
 }
