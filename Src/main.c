@@ -22,6 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "circular_buffer.h"
+#include "dwt_delay.h"
+#include "Nokia_5110.h"
+#include "string.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,7 +92,8 @@ int main(void)
   MX_GPIO_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
-
+	DWT_Init();
+	NOKIA_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
