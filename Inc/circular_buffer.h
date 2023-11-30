@@ -6,7 +6,7 @@
 
 typedef struct
 {
-    uint32_t *ptrBuffer;
+    uint8_t *ptrBuffer;
     uint32_t head;
     uint32_t tail;
     uint32_t size;
