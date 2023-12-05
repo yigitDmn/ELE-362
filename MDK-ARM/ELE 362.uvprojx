@@ -10,7 +10,8 @@
       <TargetName>ELE 362</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <uAC6>0</uAC6>
+      <pCCUsed>6190000::V6.19::ARMCLANG</pCCUsed>
+      <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F415RGTx</Device>
@@ -137,7 +138,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2V8M.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -322,14 +323,14 @@
             <PlainCh>0</PlainCh>
             <Ropi>0</Ropi>
             <Rwpi>0</Rwpi>
-            <wLevel>2</wLevel>
+            <wLevel>3</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
             <uC99>1</uC99>
             <uGnu>0</uGnu>
             <useXO>0</useXO>
-            <v6Lang>5</v6Lang>
-            <v6LangP>3</v6LangP>
+            <v6Lang>3</v6Lang>
+            <v6LangP>5</v6LangP>
             <vShortEn>1</vShortEn>
             <vShortWch>1</vShortWch>
             <v6Lto>0</v6Lto>
@@ -394,6 +395,36 @@
           <GroupName>Application/User</GroupName>
           <Files>
             <File>
+              <FileName>circular_buffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Inc\circular_buffer.c</FilePath>
+            </File>
+            <File>
+              <FileName>circular_buffer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Inc\circular_buffer.h</FilePath>
+            </File>
+            <File>
+              <FileName>dwt_delay.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Inc\dwt_delay.c</FilePath>
+            </File>
+            <File>
+              <FileName>dwt_delay.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Inc\dwt_delay.h</FilePath>
+            </File>
+            <File>
+              <FileName>Nokia_5110.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Inc\Nokia_5110.c</FilePath>
+            </File>
+            <File>
+              <FileName>Nokia_5110.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Inc\Nokia_5110.h</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/main.c</FilePath>
@@ -407,16 +438,6 @@
               <FileName>stm32f4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/stm32f4xx_hal_msp.c</FilePath>
-            </File>
-            <File>
-              <FileName>circular_buffer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Inc\circular_buffer.c</FilePath>
-            </File>
-            <File>
-              <FileName>circular_buffer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\Inc\circular_buffer.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -525,8 +546,8 @@
   <RTE>
     <apis/>
     <components>
-      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="4.3.0" condition="CMSIS Core">
-        <package name="CMSIS" schemaVersion="1.3" url="http://www.keil.com/pack/" vendor="ARM" version="4.5.0"/>
+      <component Cclass="CMSIS" Cgroup="CORE" Cvendor="ARM" Cversion="5.6.0" condition="ARMv6_7_8-M Device">
+        <package name="CMSIS" schemaVersion="1.7.7" url="http://www.keil.com/pack/" vendor="ARM" version="5.9.0"/>
         <targetInfos>
           <targetInfo name="ELE 362"/>
         </targetInfos>

@@ -24,17 +24,30 @@
 #include "circular_buffer.h"
 #include "dwt_delay.h"
 #include "Nokia_5110.h"
-#include "string.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef enum
+{
+    STATE_HEADER,
+    STATE_LENGTH1,
+    STATE_LENGTH2,
+    STATE_ID,
+    STATE_DATA,
+    STATE_FINISH,
+    STATE_CHECKSUM,
+    STATE_DONE,
+    STATE_ERROR
+} State;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define BUFFER_SIZE 64
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,16 +56,34 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+volatile uint8_t temp;
 
+uint8_t bufferArray[BUFFER_SIZE];
+volatile CircularBuffer circularBuffer;
+
+State currentState = STATE_HEADER;
+
+volatile uint8_t length1;
+volatile uint8_t length2;
+volatile uint16_t lengthOfData;
+
+volatile uint8_t i;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_UART4_Init(void);
+static void MX_USART3_UART_Init(void);
+
+void stateMachine(CircularBuffer *ptr, uint8_t byte);
+_Bool checkSum(CircularBuffer *ptr);
+void processPackage(CircularBuffer *ptr);
+void toggleLEDs(CircularBuffer *ptr);
+void printToGLCD(CircularBuffer *ptr, uint8_t item);
+void arithmeticCommandTransmit(CircularBuffer *ptr, uint8_t item);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -60,6 +91,8 @@ static void MX_UART4_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+void recieveHandler(uint8_t);
 /* USER CODE END 0 */
 
 /**
@@ -69,7 +102,7 @@ static void MX_UART4_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	arrangeCircularBuffer(&circularBuffer, &bufferArray, BUFFER_SIZE);
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -90,18 +123,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_UART4_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 	DWT_Init();
 	NOKIA_Init();
   /* USER CODE END 2 */
+	HAL_UART_Receive_IT(&huart3,&temp,1);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-
+		
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -149,35 +183,35 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief UART4 Initialization Function
+  * @brief USART3 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_UART4_Init(void)
+static void MX_USART3_UART_Init(void)
 {
 
-  /* USER CODE BEGIN UART4_Init 0 */
+  /* USER CODE BEGIN USART3_Init 0 */
 
-  /* USER CODE END UART4_Init 0 */
+  /* USER CODE END USART3_Init 0 */
 
-  /* USER CODE BEGIN UART4_Init 1 */
+  /* USER CODE BEGIN USART3_Init 1 */
 
-  /* USER CODE END UART4_Init 1 */
-  huart4.Instance = UART4;
-  huart4.Init.BaudRate = 115200;
-  huart4.Init.WordLength = UART_WORDLENGTH_8B;
-  huart4.Init.StopBits = UART_STOPBITS_1;
-  huart4.Init.Parity = UART_PARITY_NONE;
-  huart4.Init.Mode = UART_MODE_TX_RX;
-  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart4) != HAL_OK)
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN UART4_Init 2 */
+  /* USER CODE BEGIN USART3_Init 2 */
 
-  /* USER CODE END UART4_Init 2 */
+  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -202,7 +236,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_13|GPIO_PIN_14, GPIO_PIN_RESET);
+                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4|GPIO_PIN_5, GPIO_PIN_RESET);
@@ -215,9 +249,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA4 PA5 PA7 PA8
-                           PA13 PA14 */
+                           PA13 PA14 PA15 */
   GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_13|GPIO_PIN_14;
+                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -230,18 +264,194 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PA15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_15;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	if(huart->Instance == USART3){
+		recieveHandler(temp);
+		
+		HAL_UART_Receive_IT(&huart3, &temp, 1);
+	}
+}
 
+void recieveHandler(uint8_t byte){
+	NOKIA_Out(3,4,"Interrupt");
+	
+	pushItemToBuff(&circularBuffer, byte);
+	
+	stateMachine(&circularBuffer, byte);
+}
+
+void stateMachine(CircularBuffer *ptr, uint8_t byte){
+	switch (currentState){
+		case STATE_HEADER:
+			if (byte != 0xAB){
+				deleteFromHead(ptr);
+      }
+      else if (byte == 0xAB){
+				currentState = STATE_LENGTH1;
+      }
+      break;
+
+		case STATE_LENGTH1:
+			length1 = byte;
+			currentState = STATE_LENGTH2;
+      break;
+
+		case STATE_LENGTH2:
+      length2 = byte;
+      lengthOfData = (length1 << 8) | length2;
+      currentState = STATE_ID;
+      break;
+
+		case STATE_ID:
+      currentState = STATE_DATA;
+      break;
+
+		case STATE_DATA:
+      if ((getCount(ptr) - getHead(ptr) - 4) == lengthOfData){
+				currentState = STATE_FINISH;
+      }
+      break;
+
+		case STATE_FINISH:
+      if (byte == 0xBA){
+				currentState = STATE_CHECKSUM;
+      }
+      else if (byte != 0xBA){
+				currentState = STATE_ERROR;
+      }
+      break;
+
+		case STATE_CHECKSUM:
+      if (checkSum(ptr)){
+				currentState = STATE_DONE;
+				processPackage(ptr);
+			}
+      else{
+				currentState = STATE_ERROR;
+      }
+      break;
+
+		case STATE_DONE:
+			//printPackageStatus(ptr);
+			currentState = STATE_HEADER;
+      break;
+
+		case STATE_ERROR:
+      //printPackageStatus(ptr);
+      currentState = STATE_HEADER;
+      break;
+	}
+}
+
+_Bool checkSum(CircularBuffer *ptr){
+	uint16_t checkSumTotal;
+	uint8_t *item;
+  uint8_t index;
+
+  for (index = 0; index < lengthOfData + 3; index++){
+		pickItemFromBuff(ptr, item, index + 3);
+
+    if (index + 3 != lengthOfData + 4){
+			checkSumTotal += *item;
+    }
+	}
+	return ((((checkSumTotal >> 8) + checkSumTotal) & 0xFF) == 0xFF);
+}
+
+void processPackage(CircularBuffer *ptr){
+	uint8_t item;
+
+  pickItemFromBuff(ptr, &item, 3);
+    
+	if (item == 0x01){
+		toggleLEDs(ptr);
+	}
+  else if (item == 0x02){
+		printToGLCD(ptr, item);
+  }
+  else if (item == 0x03 || item == 0x04 || item == 0x05 || item == 0x06){
+		arithmeticCommandTransmit(ptr, item);
+  }
+  else{
+		for (i = 0; i < lengthOfData; i++){
+			pickItemFromBuff(ptr, &item, i + 4);
+		}
+	}
+}
+
+void toggleLEDs(CircularBuffer *ptr){
+	uint8_t dataLEDs;
+  uint8_t durationLEDs;
+
+  pickItemFromBuff(ptr, &dataLEDs, 4);
+  pickItemFromBuff(ptr, &durationLEDs, 5);
+
+	// Pinlerin Numalar Düzenlenecek
+	
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, (dataLEDs & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, (dataLEDs & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_2, (dataLEDs & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, (dataLEDs & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, (dataLEDs & 0x10) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, (dataLEDs & 0x20) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, (dataLEDs & 0x40) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, (dataLEDs & 0x80) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+  HAL_Delay(durationLEDs * 1000); // dwt_delay de olur.
+}
+
+void printToGLCD(CircularBuffer *ptr, uint8_t item){
+	uint8_t row;
+  uint8_t column;
+
+  pickItemFromBuff(ptr, &item, 4);
+
+  if (lengthOfData == 1 && item == 0xFF){
+    NOKIA_Clear();
+  }
+  else{
+		pickItemFromBuff(ptr, &row, 4);
+        
+		pickItemFromBuff(ptr, &column, 5);
+    
+		for (i = 0; i < lengthOfData; i++){
+			pickItemFromBuff(ptr, &item, i + 4);
+      NOKIA_Out(row, column, (char*)item); // Bu satiri editlenecek
+		}
+	}
+}
+
+void arithmeticCommandTransmit(CircularBuffer *ptr, uint8_t item){
+	uint8_t id = item;
+  float result;
+  char resultChar[32];
+
+  pickItemFromBuff(ptr, &item, 4);
+  result = (float)item;
+
+  for (i = 0; i < lengthOfData - 1; i++){
+		pickItemFromBuff(ptr, &item, i + 5);
+    if (id == 0x03){
+			result += (float)item;
+    }
+		else if (id == 0x04){
+			result -= (float)item;
+		}
+    else if (id == 0x05){
+			result *= (float)item;
+		}
+    else if (id == 0x06){
+			result /= (float)item;
+		}
+	}
+	sprintf(resultChar, "%.2f", result);
+	HAL_UART_Transmit(&huart3, (uint8_t *)resultChar , 32, 1);
+}
 /* USER CODE END 4 */
 
 /**
