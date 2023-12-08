@@ -11,11 +11,7 @@ void arrangeCircularBuffer(CircularBuffer *ptr, uint8_t *buffer, uint32_t size){
 void pushItemToBuff(CircularBuffer *ptr, uint8_t item){
 	ptr->ptrBuffer[ptr->tail] = item; // Buffer Hala dolmamış ise son kısma veriyi ata
   
-	if (ptr->count == 0){
-		ptr->head = 0;
-    ptr->count++;
-  }
-  else if (ptr->count < ptr->size){
+	if (ptr->count < ptr->size){
 		ptr->count++; // İçine eleman eklendiği için eleman sayacını arttır.
   }
   else if (ptr->count == ptr->size){
@@ -55,7 +51,10 @@ _Bool isBufferEmpty(CircularBuffer *ptr){
 
 void deleteFromHead(CircularBuffer *ptr){
 	ptr->ptrBuffer[ptr->head] = 0;
-  ptr->head++;
+  ptr->head = (ptr->head + 1) % ptr->size;
+	if(ptr->count > 0){
+		ptr->count--;
+	}
 }
 
 uint32_t getHead(CircularBuffer *ptr){
